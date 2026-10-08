@@ -2,7 +2,7 @@
 // Generates the narration MP3s with ElevenLabs into audio/, plus audio/manifest.json,
 // which the host screen reads to know which lines have audio.
 //
-// Each scene is split into narrator lines and "quoted" character lines (see `speaker` in
+// Each scene is split into clips (see narrationClips in js/story.js), and each clip into narrator lines and "quoted" character lines (see `speaker` in
 // js/story.js), each voiced by the cast in tools/voices.json, then stitched into one MP3.
 // Only new or changed lines are regenerated, so it's cheap to re-run after editing the story.
 //
@@ -33,17 +33,17 @@ const clean = html => html
   .replace(/\s+/g, ' ')
   .trim();
 
-function segmentsFor(state) {
-  const sc = G.SCENES[state.sceneId];
-  const segs = [{ voice: 'narrator', text: `${clean(sc.title)}. <break time="0.8s" />` }];
-  let quote = 0;
-  for (const para of G.sceneText(state)) {
+// Splits a clip into narrator lines and "quoted" character lines.
+// `quote` counts quotes across the whole scene so list-style `speaker`s line up.
+function segmentsFor(scene, clip, counter) {
+  const segs = clip.title ? [{ voice: 'narrator', text: `${clean(scene.title)}. <break time="0.8s" />` }] : [];
+  for (const para of clip.parts) {
     for (const part of clean(para).split(/("[^"]+")/)) {
       const text = part.trim();
       if (!/[A-Za-z0-9]/.test(text)) continue;
       if (text.startsWith('"')) {
-        const who = Array.isArray(sc.speaker) ? sc.speaker[quote] : sc.speaker;
-        quote++;
+        const who = Array.isArray(scene.speaker) ? scene.speaker[counter.quote] : scene.speaker;
+        counter.quote++;
         segs.push({ voice: who || 'narrator', text: text.slice(1, -1) });
       } else {
         segs.push({ voice: 'narrator', text });
@@ -59,8 +59,18 @@ function segmentsFor(state) {
   }, []);
 }
 
+// Every clip of every narration variant, each recorded once.
+const clipJobs = new Map();
+for (const state of G.narrationStates()) {
+  const counter = { quote: 0 };
+  for (const clip of G.narrationClips(state)) {
+    const segs = segmentsFor(G.SCENES[state.sceneId], clip, counter);
+    if (!clipJobs.has(clip.key)) clipJobs.set(clip.key, { key: clip.key, segs });
+  }
+}
+
 const jobs = [
-  ...G.narrationStates().map(s => ({ key: G.audioKey(s), segs: segmentsFor(s) })),
+  ...clipJobs.values(),
   ...Object.entries(G.ROLL_LINES).map(([key, text]) => ({ key, segs: [{ voice: 'narrator', text }] })),
 ];
 

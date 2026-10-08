@@ -44,7 +44,8 @@ node tools/voices.mjs                           # generate audio/*.mp3 + audio/m
 git add audio && git commit -m "Add voices" && git push
 ```
 
-- The whole story is about 10,000 characters. The ElevenLabs free tier gives 10,000 credits a month, so you'll probably need the $5 Starter plan (30,000) to have room for retakes.
+- The whole story is about 8,400 characters, which fits in the ElevenLabs free tier (10,000 credits a month) with a little room for retakes. The $5 Starter plan gives 30,000.
+- Scenes are recorded as clips. Sentences that change at runtime ("Dawn is 3 candle-marks away", "You accuse Thorin Ashmantle") get their own short clip per value, and the rest of the scene is recorded once and shared. The TV plays a scene's clips back to back.
 - Re-running only regenerates lines whose text or voice changed. `--only intro,hub-4` redoes specific lines, and `--force` redoes everything.
 - Casting lives in `tools/voices.json`. Run `node tools/voices.mjs --list-voices` to see the voices on your account and swap any id. Lower `stability` and higher `style` make the delivery more over the top.
 - Who voices each "quoted" line is set by `speaker` on each scene in `js/story.js`.

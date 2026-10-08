@@ -16,6 +16,7 @@ let pending = null;        // scheduled transition (after a vote result or a rol
 let narrate = false;
 let voices = {};          // audio/manifest.json: line key → version hash
 let voice = null;         // the <audio> currently narrating
+let voiceQueue = [];      // clips still to play after it
 let lastRenderedStep = -1;
 let lastDieState = '';
 
@@ -242,7 +243,7 @@ function tick() {
     if (die === 'landed') {
       sfx.land(S.roll);
       const roll = S.roll;
-      setTimeout(() => { if (narrate && S.roll === roll) playVoice(G.rollAudioKey(roll)); }, 600);
+      setTimeout(() => { if (narrate && S.roll === roll) playVoices([G.rollAudioKey(roll)]); }, 600);
     }
     render();
   }
@@ -263,7 +264,7 @@ function updateTimer() {
 function speak() {
   stopVoice();
   if (!narrate || !S.sceneId) return;
-  if (playVoice(G.audioKey(S))) return;
+  if (playVoices(G.narrationClips(S).map(c => c.key))) return;
   if (!('speechSynthesis' in window)) return;
   const sc = G.SCENES[S.sceneId];
   const text = [sc.title, ...G.sceneText(S)].join('. ')
@@ -272,17 +273,31 @@ function speak() {
   speechSynthesis.speak(new SpeechSynthesisUtterance(text));
 }
 
-function playVoice(key) {
-  if (!voices[key]) return false;
-  voice?.pause();
-  voice = new Audio(`audio/${key}.mp3?v=${voices[key]}`);
-  voice.play().catch(() => {}); // blocked until the page has been clicked once
+// Plays clips back to back. Returns false if any clip hasn't been generated,
+// so the caller can fall back to the browser voice for the whole scene.
+function playVoices(keys) {
+  if (!keys.length || !keys.every(k => voices[k])) return false;
+  stopVoice();
+  const clips = keys.map(k => {
+    const audio = new Audio(`audio/${k}.mp3?v=${voices[k]}`);
+    audio.preload = 'auto'; // load the whole sequence up front so there's no gap between clips
+    return audio;
+  });
+  const next = () => {
+    voice = clips.shift() || null;
+    voiceQueue = clips;
+    if (!voice) return;
+    voice.addEventListener('ended', () => { if (voiceQueue === clips) next(); }, { once: true });
+    voice.play().catch(() => {}); // blocked until the page has been clicked once
+  };
+  next();
   return true;
 }
 
 function stopVoice() {
   voice?.pause();
   voice = null;
+  voiceQueue = [];
   if ('speechSynthesis' in window) speechSynthesis.cancel();
 }
 
