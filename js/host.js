@@ -14,6 +14,8 @@ let S = null;
 let players = {}, votes = {}, advances = {}, rolls = {};
 let pending = null;        // scheduled transition (after a vote result or a roll)
 let narrate = false;
+let voices = {};          // audio/manifest.json: line key → version hash
+let voice = null;         // the <audio> currently narrating
 let lastRenderedStep = -1;
 let lastDieState = '';
 
@@ -51,6 +53,14 @@ db.on(path('players'), v => { players = v || {}; assignClasses(); checkVotes(); 
 db.on(path('votes'), v => { votes = v || {}; checkVotes(); render(); });
 db.on(path('advance'), v => { advances = v || {}; checkAdvance(); });
 db.on(path('rolls'), v => { rolls = v || {}; checkRoll(); });
+fetch('audio/manifest.json', { cache: 'no-cache' })
+  .then(r => (r.ok ? r.json() : {}))
+  .then(m => {
+    voices = m;
+    if (Object.keys(m).length) narrate = true; // AI voices are on by default once generated
+    render();
+  })
+  .catch(() => {});
 resume();
 setInterval(tick, 250);
 render();
@@ -229,7 +239,11 @@ function tick() {
   if (die !== lastDieState) {
     lastDieState = die;
     if (die === 'tumbling') sfx.clatter();
-    if (die === 'landed') sfx.land(S.roll);
+    if (die === 'landed') {
+      sfx.land(S.roll);
+      const roll = S.roll;
+      setTimeout(() => { if (narrate && S.roll === roll) playVoice(G.rollAudioKey(roll)); }, 600);
+    }
     render();
   }
   updateTimer();
@@ -245,14 +259,38 @@ function updateTimer() {
   el.querySelector('.secs').textContent = `${secondsLeft(endsAt, db.now())}s`;
 }
 
+// Plays the scene's generated narration, or falls back to the browser's built-in voice.
 function speak() {
-  if (!narrate || !('speechSynthesis' in window)) return;
+  stopVoice();
+  if (!narrate || !S.sceneId) return;
+  if (playVoice(G.audioKey(S))) return;
+  if (!('speechSynthesis' in window)) return;
   const sc = G.SCENES[S.sceneId];
   const text = [sc.title, ...G.sceneText(S)].join('. ')
     .replace(/<[^>]+>/g, '')
     .replace(/\p{Extended_Pictographic}/gu, '');
-  speechSynthesis.cancel();
   speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+}
+
+function playVoice(key) {
+  if (!voices[key]) return false;
+  voice?.pause();
+  voice = new Audio(`audio/${key}.mp3?v=${voices[key]}`);
+  voice.play().catch(() => {}); // blocked until the page has been clicked once
+  return true;
+}
+
+function stopVoice() {
+  voice?.pause();
+  voice = null;
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+}
+
+function setNarrate(on) {
+  narrate = on;
+  if (on) speak();
+  else stopVoice();
+  render();
 }
 
 // --- Rendering ---
@@ -269,6 +307,8 @@ function render() {
     box.checked = narrate;
     box.addEventListener('change', () => { narrate = box.checked; });
   }
+  $('#sound')?.addEventListener('click', () => setNarrate(!narrate));
+  $('#replay')?.addEventListener('click', speak);
   updateTimer();
 }
 
@@ -310,7 +350,7 @@ function lobbyView() {
         <ul class="slots">${slots}</ul>
         <div class="row">
           <button id="start" class="primary" ${list.length ? '' : 'disabled'}>Begin the mystery</button>
-          <label class="toggle"><input type="checkbox" id="narrate"> Read scenes aloud</label>
+          <label class="toggle"><input type="checkbox" id="narrate"> Narration ${Object.keys(voices).length ? '(voiced cast)' : '(browser voice)'}</label>
         </div>
         <p class="muted small"><a href="${esc(url)}" target="_blank" rel="noopener">Open a test controller in a new tab</a></p>
       </div>
@@ -330,6 +370,8 @@ function gameView() {
     <header class="hud">
       <span class="brand">Death at the Drowned Lantern</span>
       <span class="candles" title="Searches left before dawn">${'🕯️'.repeat(Math.max(0, S.marksLeft)) || '🌅'}</span>
+      <button id="sound" class="ghost icon" title="${narrate ? 'Mute narration' : 'Turn on narration'}">${narrate ? '🔊' : '🔇'}</button>
+      ${narrate ? '<button id="replay" class="ghost icon" title="Replay narration">↻</button>' : ''}
       <span class="code-chip">Room <b>${code}</b></span>
     </header>
     <div class="stage">

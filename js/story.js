@@ -70,8 +70,10 @@ export const WHISPERS = [
 //   next: scene to continue to when there are no choices
 //   clue: clue id granted on entering. location: consumes a candle-mark on entering.
 //   hub / accuse / ending: special scene kinds.
+//   speaker: who voices the "quoted" lines in the audio narration (a list = one per quote, in order).
 export const SCENES = {
   intro: {
+    speaker: 'pip',
     art: '⛈️', title: 'A Storm at the Drowned Lantern',
     text: [
       'Rain hammers the Drowned Lantern, a crooked inn on the High Road. The river has swallowed the only bridge, so nobody leaves tonight.',
@@ -166,6 +168,7 @@ export const SCENES = {
     ],
   },
   bar_wine: {
+    speaker: 'pip',
     art: '🫗', title: 'A Helpful Bard', clue: 'wine', next: 'hub',
     text: [
       '"His lordship\'s wine? The bard took it up," Pip says. "Insisted on it. Said she\'d sing him a private song to make up for something."',
@@ -173,6 +176,7 @@ export const SCENES = {
     ],
   },
   bar_cellar: {
+    speaker: 'pip',
     art: '🕯️', title: "Pip's Alibi", clue: 'cellar', next: 'hub',
     text: [
       'Pip squeaks and confesses. "I was in the cellar! Brother Halden was down there, drunk on my best red. I was hauling him back up the stairs when the scream came."',
@@ -180,6 +184,7 @@ export const SCENES = {
     ],
   },
   bar_clam: {
+    speaker: 'pip',
     art: '😶', title: 'Nothing to Say', next: 'hub',
     text: [
       'Pip flinches and clams up. "I\'ve told you everything! Please, I just want this night to end."',
@@ -194,6 +199,7 @@ export const SCENES = {
     ],
   },
   bar_lute_fail: {
+    speaker: 'lyra',
     art: '🎻', title: 'Just a Lute', next: 'hub',
     text: [
       "It's a fine elven instrument, but if it holds any secrets, they're beyond you.",
@@ -203,6 +209,7 @@ export const SCENES = {
 
   // --- Stables ---
   loc_guard: {
+    speaker: 'thorin',
     art: '🐴', title: 'The Stables', location: 'guard',
     text: [
       'Thorin Ashmantle sits on a hay bale, turning his empty sheath over in his hands.',
@@ -214,6 +221,7 @@ export const SCENES = {
     ],
   },
   guard_dagger: {
+    speaker: 'thorin',
     art: '💤', title: 'A Guard Who Never Sleeps', clue: 'dagger', next: 'hub',
     text: [
       '"Thirty years I\'ve stood watch. Never once slept on duty," Thorin says.',
@@ -221,6 +229,7 @@ export const SCENES = {
     ],
   },
   guard_truth: {
+    speaker: 'thorin',
     art: '🧔', title: 'An Honest Dwarf', clue: 'dagger', next: 'hub',
     text: [
       "Thorin's shame is real. You'd bet your life he's telling the truth.",
@@ -228,6 +237,7 @@ export const SCENES = {
     ],
   },
   guard_grudge: {
+    speaker: 'thorin',
     art: '😠', title: 'Bad Blood', clue: 'grudge', next: 'hub',
     text: [
       "You can't read him, but Thorin isn't hiding his anger.",
@@ -245,6 +255,7 @@ export const SCENES = {
     ],
   },
   chapel_debt: {
+    speaker: 'halden',
     art: '📜', title: "The Temple's Debt", clue: 'debt', next: 'hub',
     text: [
       '"Vane held the temple\'s debts," Halden admits. "He meant to call them in and turn the orphans out. Yes, we quarrelled."',
@@ -252,6 +263,7 @@ export const SCENES = {
     ],
   },
   chapel_witness: {
+    speaker: 'halden',
     art: '👁️', title: 'A Figure at the Door', clue: 'witness', next: 'hub',
     text: [
       'Halden takes a shaky breath. "Near midnight I went down for... more wine. On the way I passed his lordship\'s door."',
@@ -261,6 +273,7 @@ export const SCENES = {
 
   // --- Seraphine's room ---
   loc_merchant: {
+    speaker: 'seraphine',
     art: '🔥', title: "Seraphine's Room", location: 'merchant',
     text: [
       'Seraphine Vell sits by her hearth, feeding papers into the flames one by one. Her tail flicks lazily.',
@@ -279,6 +292,7 @@ export const SCENES = {
     ],
   },
   merchant_ashes: {
+    speaker: 'seraphine',
     art: '🔥', title: 'Ashes', clue: 'ashes', next: 'hub',
     text: [
       'Your fingers close on nothing but ash. Seraphine laughs.',
@@ -286,6 +300,7 @@ export const SCENES = {
     ],
   },
   merchant_cargo: {
+    speaker: 'seraphine',
     art: '📦', title: 'Smuggled Silk', clue: 'cargo', next: 'hub',
     text: [
       '"Untaxed Calishite silk," Seraphine says with a shrug. "Vane was going to seize my wagons and ruin me."',
@@ -320,6 +335,7 @@ export const SCENES = {
     ],
   },
   bard_letters: {
+    speaker: ['narrator', 'lyra'],
     art: '⚖️', title: 'A Brother Hanged', clue: 'motive', next: 'hub',
     text: [
       'Under the letters lies a yellowed notice: "Elric Moonwhisper, hanged for theft by order of Magistrate Aldric Vane."',
@@ -329,6 +345,7 @@ export const SCENES = {
 
   // --- Endings ---
   end_justice: {
+    speaker: ['narrator', 'lyra', 'lyra'],
     art: '🏆', title: 'The Last Song', ending: true, win: true,
     text: [
       '"Lyra Moonwhisper." The room goes silent as you lay out the evidence piece by piece.',
@@ -381,4 +398,42 @@ export function sceneText(S) {
   const marks = `${S.marksLeft} candle-mark${S.marksLeft === 1 ? '' : 's'}`;
   const accused = SUSPECTS[S.accused]?.name || 'someone';
   return sc.text.map(p => p.replaceAll('{marks}', marks).replaceAll('{accused}', accused));
+}
+
+// --- Narration audio (generated by tools/voices.mjs into audio/) ---
+
+// One audio file per scene, plus variants where the text changes at runtime.
+export function audioKey(S) {
+  if (S.sceneId === 'hub') return `hub-${S.marksLeft}`;
+  if (S.sceneId === 'end_wrong') return `end_wrong-${S.accused}`;
+  return S.sceneId;
+}
+
+// Every narration variant the game can show, as minimal states for sceneText/audioKey.
+export function narrationStates() {
+  const states = [];
+  for (const sceneId of Object.keys(SCENES)) {
+    if (sceneId === 'hub') {
+      for (let m = START_MARKS; m >= 1; m--) states.push({ sceneId, marksLeft: m, accused: '' });
+    } else if (sceneId === 'end_wrong') {
+      for (const id of Object.keys(SUSPECTS)) if (id !== CULPRIT) states.push({ sceneId, marksLeft: 0, accused: id });
+    } else {
+      states.push({ sceneId, marksLeft: 0, accused: '' });
+    }
+  }
+  return states;
+}
+
+// The narrator's over-the-top reaction when a d20 lands.
+export const ROLL_LINES = {
+  'roll-nat20': 'A natural twenty! The very gods bow before you!',
+  'roll-nat1': 'A natural one. Oh no. Oh no, no, no.',
+  'roll-success': 'Success!',
+  'roll-failure': 'Failure. How... unfortunate.',
+};
+
+export function rollAudioKey(roll) {
+  if (roll.value === 20) return 'roll-nat20';
+  if (roll.value === 1) return 'roll-nat1';
+  return roll.success ? 'roll-success' : 'roll-failure';
 }

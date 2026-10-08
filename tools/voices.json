@@ -1,0 +1,12 @@
+{
+  "_comment": "Voice casting for tools/voices.mjs. Run `node tools/voices.mjs --list-voices` to see the voices on your account and swap any id. stability: lower = more dramatic. style: higher = more exaggerated (0-1).",
+  "model": "eleven_multilingual_v2",
+  "voices": {
+    "narrator":  { "id": "JBFqnCBsd6RMkjVDRZzb", "name": "George",    "stability": 0.35, "style": 0.65 },
+    "pip":       { "id": "CYw3kZ02Hs0563khs1Fj", "name": "Dave",      "stability": 0.25, "style": 0.8 },
+    "thorin":    { "id": "2EiwWnXFnvU5JabPnv8n", "name": "Clyde",     "stability": 0.3,  "style": 0.75 },
+    "halden":    { "id": "onwK4e9ZLuTAKqWW03F9", "name": "Daniel",    "stability": 0.3,  "style": 0.7 },
+    "seraphine": { "id": "XB0fDUnXU5powFXDhCwa", "name": "Charlotte", "stability": 0.3,  "style": 0.85 },
+    "lyra":      { "id": "pFZP5JQG7iQjIQuC4Bku", "name": "Lily",      "stability": 0.35, "style": 0.7 }
+  }
+}

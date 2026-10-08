@@ -31,6 +31,25 @@ The config values are not secrets. They're meant to be public, and the database 
 2. Go to **Settings → Pages → Build and deployment** and set **Source: Deploy from a branch**, branch `main`, folder `/ (root)`.
 3. After a minute the game is live at `https://<you>.github.io/<repo>/`. Open `host.html` on the TV.
 
+## Voiced narration (ElevenLabs)
+
+The TV can play a fully voiced narration: a dramatic narrator plus a voice for each suspect, and the
+narrator reacting to dice rolls ("A natural twenty! The very gods bow before you!").
+The MP3s are generated once by a script and committed to `audio/`, so playing them costs nothing.
+
+```bash
+node tools/voices.mjs --dry-run                 # read the whole script and character count, no key needed
+export ELEVENLABS_API_KEY=sk_...                # ElevenLabs → Developers → API Keys
+node tools/voices.mjs                           # generate audio/*.mp3 + audio/manifest.json
+git add audio && git commit -m "Add voices" && git push
+```
+
+- The whole story is about 10,000 characters. The ElevenLabs free tier gives 10,000 credits a month, so you'll probably need the $5 Starter plan (30,000) to have room for retakes.
+- Re-running only regenerates lines whose text or voice changed. `--only intro,hub-4` redoes specific lines, and `--force` redoes everything.
+- Casting lives in `tools/voices.json`. Run `node tools/voices.mjs --list-voices` to see the voices on your account and swap any id. Lower `stability` and higher `style` make the delivery more over the top.
+- Who voices each "quoted" line is set by `speaker` on each scene in `js/story.js`.
+- Scenes without an MP3 fall back to the browser's built-in voice. The 🔊 button on the TV mutes the narration, and ↻ replays it.
+
 ## How it works
 
 ```
@@ -53,6 +72,8 @@ Refreshing the host page resumes the same room because the code is in the URL.
 | `js/story.js` | **All story content**: scenes, clues, suspects, whispers, endings |
 | `js/db.js` | Firebase / local-demo database wrapper |
 | `database.rules.json` | Realtime Database rules |
+| `tools/voices.mjs`, `tools/voices.json` | ElevenLabs narration generator and voice casting |
+| `js/sfx.js` | Synthesized dice sounds |
 
 ## Writing your own story
 
