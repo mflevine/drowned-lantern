@@ -103,27 +103,41 @@ input {
 
 /* d20 */
 .d20 {
+  --die-hi: #f8d58c;
+  --die-lo: #9a6220;
+  --glow: rgba(246, 201, 119, 0.0);
   width: 9em; height: 9em;
   margin: 0.4em auto;
-  display: grid; place-items: center;
-  clip-path: polygon(50% 0, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
-  background: linear-gradient(160deg, var(--gold-2), #8a5a1e);
-  color: #2a1a0b;
-  font-family: 'Cinzel', serif;
-  font-weight: 800;
-  font-size: 1em;
-  padding: 0;
-  border: 0;
+  padding: 0; border: 0; background: none;
+  display: block;
+  filter: drop-shadow(0 0.4em 0.6em rgba(0, 0, 0, 0.6)) drop-shadow(0 0 1.2em var(--glow));
 }
-.d20 span { font-size: 3.6em; }
-.d20.waiting { animation: wobble 0.6s ease-in-out infinite; }
-.d20.landed { animation: land 0.5s ease-out; }
-.d20.crit { background: linear-gradient(160deg, #c6f5a8, var(--green)); }
-.d20.fumble { background: linear-gradient(160deg, #ff9d8f, var(--blood)); }
+.d20-svg { width: 100%; height: 100%; overflow: visible; }
+.d20 .face { fill: url(#d20grad); stroke: #5a3610; stroke-width: 2; stroke-linejoin: round; }
+.d20 .inner { fill: rgba(255, 255, 255, 0.16); stroke: #5a3610; stroke-width: 1.5; stroke-linejoin: round; }
+.d20 .edge { stroke: #5a3610; stroke-width: 1.2; opacity: 0.8; }
+.d20 .num { font-family: 'Cinzel', serif; font-weight: 800; font-size: 21px; fill: #2a1a0b; }
+.d20.waiting { animation: wobble 0.9s ease-in-out infinite; }
+.d20.tumbling { animation: tumble 2.2s cubic-bezier(0.2, 0.7, 0.3, 1) forwards; }
+.d20.landed { animation: slam 0.45s ease-out; }
+.d20.win { --glow: rgba(121, 184, 106, 0.55); }
+.d20.lose { --glow: rgba(192, 69, 59, 0.45); }
+.d20.crit { --die-hi: #d9ffc4; --die-lo: #3f8f3a; --glow: rgba(140, 255, 120, 0.9); animation: slam 0.45s ease-out, pulse 1s ease-in-out 0.45s infinite; }
+.d20.fumble { --die-hi: #ffb3a8; --die-lo: #8a1f17; --glow: rgba(255, 70, 50, 0.8); animation: slam 0.45s ease-out, shake 0.5s ease-in-out 0.45s 2; }
 .d20.small { width: 7em; height: 7em; }
-.d20.small span { font-size: 2.6em; }
+.button-die { cursor: pointer; }
 @keyframes wobble { 0%, 100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg) scale(1.05); } }
-@keyframes land { 0% { transform: scale(1.6) rotate(40deg); } 100% { transform: none; } }
+@keyframes tumble {
+  0%   { transform: translate(-60%, -40%) rotate(0deg) scale(0.6); }
+  25%  { transform: translate(30%, 8%) rotate(420deg) scale(1.08); }
+  45%  { transform: translate(-18%, -6%) rotate(640deg) scale(0.94); }
+  65%  { transform: translate(8%, 3%) rotate(760deg) scale(1.03); }
+  82%  { transform: translate(-3%, 0) rotate(705deg) scale(0.99); }
+  100% { transform: rotate(720deg); }
+}
+@keyframes slam { 0% { transform: scale(1.35); } 60% { transform: scale(0.92); } 100% { transform: none; } }
+@keyframes pulse { 50% { transform: scale(1.07); } }
+@keyframes shake { 25% { transform: translateX(-6%) rotate(-4deg); } 75% { transform: translateX(6%) rotate(4deg); } }
 
 /* ---------------- Host (TV) ---------------- */
 .host { font-size: clamp(16px, 1.45vw, 30px); }
@@ -208,8 +222,9 @@ input {
 .overlay { position: fixed; inset: 0; background: rgba(10, 6, 4, 0.82); display: grid; place-items: center; animation: fade 0.3s; }
 @keyframes fade { from { opacity: 0; } }
 .roll-card { text-align: center; font-size: 1.4em; min-width: 16em; }
-.roll-card .d20 { font-size: 1.6em; }
-.roll-card .pass, .roll-card .fail { font-family: 'Cinzel', serif; font-weight: 800; font-size: 1.4em; }
+.roll-card .d20 { font-size: 1.7em; margin: 0.9em auto 0.7em; }
+.roll-card .outcome { animation: pop 0.4s ease-out; }
+.roll-card .outcome { font-family: 'Cinzel', serif; font-weight: 800; font-size: 1.4em; }
 
 @media (max-width: 800px) {
   .lobby, .stage { grid-template-columns: 1fr; }
@@ -242,7 +257,6 @@ input {
 .vote.picked { border-color: var(--gold); background: #3a2a12; box-shadow: 0 0 0 2px var(--gold) inset; }
 .vote.picked .letter { background: var(--gold); color: #2a1a0b; }
 .chosen { font-size: 1.3rem; font-weight: 600; background: #3a2a12; border: 1px solid var(--gold); border-radius: 10px; padding: 1rem; margin: 0.6rem 0; }
-.button-die { cursor: pointer; }
 
 .secret { border-top: 1px solid var(--line); padding-top: 0.8rem; text-align: center; }
 .secret button { width: 100%; font-size: 0.9rem; }

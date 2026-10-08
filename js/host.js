@@ -2,7 +2,8 @@
 // phones write votes, rolls and "continue" taps, and the host decides what happens.
 import { connect, mode } from './db.js';
 import * as G from './story.js';
-import { $, esc, shuffle, classOf, LETTERS, normalizeState, secondsLeft } from './util.js';
+import { $, esc, shuffle, classOf, LETTERS, normalizeState, secondsLeft, d20Svg, dieState, dieClass, TUMBLE_MS } from './util.js';
+import * as sfx from './sfx.js';
 
 const app = $('#app');
 const db = await connect();
@@ -14,6 +15,7 @@ let players = {}, votes = {}, advances = {}, rolls = {};
 let pending = null;        // scheduled transition (after a vote result or a roll)
 let narrate = false;
 let lastRenderedStep = -1;
+let lastDieState = '';
 
 const path = p => `rooms/${code}/${p}`;
 const stepKey = () => `s${S.step}`;
@@ -178,9 +180,10 @@ function applyRoll(value, auto) {
   S.roll.value = value;
   S.roll.auto = auto;
   S.roll.success = value >= S.roll.dc;
+  S.roll.revealAt = db.now() + TUMBLE_MS;
   push();
-  render();
-  pending = setTimeout(finishRoll, 4000);
+  pending = setTimeout(finishRoll, TUMBLE_MS + 3500);
+  tick();
 }
 
 function finishRoll() {
@@ -220,6 +223,14 @@ function tick() {
   if (S.phase === 'vote' && now >= S.voteEndsAt) closeVote();
   if (S.phase === 'roll' && S.roll && !S.roll.value && now >= S.roll.endsAt) {
     applyRoll(1 + Math.floor(Math.random() * 20), true);
+  }
+  // Re-render when the die starts tumbling and when it lands.
+  const die = S.phase === 'roll' ? dieState(S.roll, now) : '';
+  if (die !== lastDieState) {
+    lastDieState = die;
+    if (die === 'tumbling') sfx.clatter();
+    if (die === 'landed') sfx.land(S.roll);
+    render();
   }
   updateTimer();
 }
@@ -401,15 +412,21 @@ function cluesView() {
 
 function rollView() {
   const r = S.roll;
+  const state = dieState(r, db.now());
   const who = `${G.CLASSES[r.cls]?.icon || '🎲'} ${esc(r.name)}`;
-  const status = !r.value
-    ? `<p>${who}, roll the d20 on your phone!</p><div class="timer" id="timer"><div class="fill"></div><span class="secs"></span></div>`
-    : `<p class="${r.success ? 'pass' : 'fail'}">${r.success ? '✅ Success!' : '❌ Failure'}${r.auto ? ' <span class="muted">(rolled by fate)</span>' : ''}</p>`;
+  let status;
+  if (state === 'waiting') {
+    status = `<p>${who}, tap the die on your phone!</p><div class="timer" id="timer"><div class="fill"></div><span class="secs"></span></div>`;
+  } else if (state === 'tumbling') {
+    status = `<p class="muted">${r.auto ? 'Fate rolls…' : `${who} rolls…`}</p>`;
+  } else {
+    const nat = r.value === 20 ? 'Natural 20! ' : r.value === 1 ? 'Natural 1! ' : '';
+    status = `<p class="outcome ${r.success ? 'pass' : 'fail'}">${nat}${r.success ? 'Success!' : 'Failure'}</p>
+      ${r.auto ? '<p class="muted">Nobody rolled in time, so fate rolled.</p>' : ''}`;
+  }
   return `<div class="overlay"><div class="roll-card">
-    <p class="eyebrow">${esc(r.skill)} check · DC ${r.dc}</p>
-    <div class="d20 ${r.value ? 'landed' : 'waiting'} ${r.value === 20 ? 'crit' : ''} ${r.value === 1 ? 'fumble' : ''}">
-      <span>${r.value || '?'}</span>
-    </div>
+    <p class="eyebrow">${esc(r.skill)} check · needs ${r.dc} or higher</p>
+    <div class="d20 ${dieClass(r, state)}">${d20Svg(state === 'landed' ? r.value : '?')}</div>
     ${status}
   </div></div>`;
 }

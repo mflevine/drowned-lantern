@@ -1,7 +1,7 @@
 // The phone controller. It reads the host's state and writes only votes, rolls and taps.
 import { connect } from './db.js';
 import * as G from './story.js';
-import { $, esc, classOf, LETTERS, normalizeState, secondsLeft } from './util.js';
+import { $, esc, classOf, LETTERS, normalizeState, secondsLeft, d20Svg, dieState, dieClass } from './util.js';
 
 const app = $('#app');
 const params = new URLSearchParams(location.search);
@@ -63,6 +63,7 @@ function watchVote() {
   if (!S || S.step === voteStep) return;
   voteStep = S.step;
   myVote = null;
+  rolling = false;
   unsubVote?.();
   unsubVote = db.on(path(`votes/s${S.step}/${pid}`), v => { myVote = v; render(); });
 }
@@ -126,7 +127,7 @@ function render() {
     return;
   }
   if (!S) return message('Room closed', 'The host ended this game.', true);
-  const key = JSON.stringify([S, myVote, secret, showSecret, players, tappedStep, rolling]);
+  const key = JSON.stringify([S, myVote, secret, showSecret, players, tappedStep, rolling, dieState(S.roll, db.now())]);
   if (key === lastKey) return;
   lastKey = key;
 
@@ -189,19 +190,22 @@ function body(me) {
 function rollBody() {
   const r = S.roll;
   const mine = r.pid === pid;
-  if (r.value) {
-    return `<p class="eyebrow">${esc(r.skill)} check · DC ${r.dc}</p>
-      <div class="d20 small landed"><span>${r.value}</span></div>
+  const state = dieState(r, db.now());
+  const head = `<p class="eyebrow">${esc(r.skill)} check · needs ${r.dc}+</p>`;
+  if (state === 'landed') {
+    return `${head}<div class="d20 small ${dieClass(r, state)}">${d20Svg(r.value)}</div>
       <h2 class="${r.success ? 'pass' : 'fail'}">${r.success ? 'Success!' : 'Failure'}</h2>`;
   }
-  if (!mine) {
-    return `<p class="eyebrow">${esc(r.skill)} check · DC ${r.dc}</p>
-      <h2>${esc(r.name)} is rolling…</h2><p class="muted">Fingers crossed.</p>`;
+  if (state === 'tumbling' || (mine && rolling)) {
+    return `${head}<div class="d20 small tumbling">${d20Svg()}</div><h2>Rolling…</h2>
+      <p class="muted">Watch the big screen!</p>`;
   }
-  return `<p class="eyebrow">${esc(r.skill)} check · DC ${r.dc}</p>
-    <h2>The party is counting on you!</h2>
-    <button id="roll" class="d20 small button-die ${rolling ? 'waiting' : ''}" ${rolling ? 'disabled' : ''}><span id="rollNum">🎲</span></button>
-    <p>${rolling ? 'Rolling…' : 'Tap the die to roll.'}</p>
+  if (!mine) {
+    return `${head}<h2>${esc(r.name)} is rolling…</h2><p class="muted">Fingers crossed.</p>`;
+  }
+  return `${head}<h2>The party is counting on you!</h2>
+    <button id="roll" class="d20 small waiting button-die" aria-label="Roll the d20">${d20Svg('TAP')}</button>
+    <p>Tap the die to roll.</p>
     <div class="timer" id="timer"><div class="fill"></div><span class="secs"></span></div>`;
 }
 
@@ -235,22 +239,12 @@ function tap() {
 function roll() {
   if (rolling) return;
   rolling = true;
+  db.set(path(`rolls/s${S.step}`), 1 + Math.floor(Math.random() * 20));
   render();
-  const step = S.step;
-  const value = 1 + Math.floor(Math.random() * 20);
-  let spins = 0;
-  const spin = setInterval(() => {
-    const el = $('#rollNum');
-    if (el) el.textContent = 1 + Math.floor(Math.random() * 20);
-    if (++spins >= 12) {
-      clearInterval(spin);
-      rolling = false;
-      db.set(path(`rolls/s${step}`), value);
-    }
-  }, 80);
 }
 
 function updateTimer() {
+  if (S?.phase === 'roll') render(); // picks up tumbling → landed (no-op if nothing changed)
   const el = $('#timer');
   if (!el || !S) return;
   const endsAt = S.phase === 'vote' ? S.voteEndsAt : S.roll?.endsAt;
