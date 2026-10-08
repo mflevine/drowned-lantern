@@ -81,8 +81,9 @@ function assignClasses() {
   const used = new Set(list.map(p => p.cls).filter(c => typeof c === 'number'));
   for (const p of list) {
     if (typeof p.cls === 'number') continue;
-    const cls = G.CLASSES.findIndex((_, i) => !used.has(i));
-    if (cls < 0) return;
+    const free = G.CLASSES.map((_, i) => i).filter(i => !used.has(i));
+    if (!free.length) return;
+    const cls = free[Math.floor(Math.random() * free.length)]; // random, but no two players share a class
     used.add(cls);
     db.update(path(`players/${p.id}`), { cls });
   }
