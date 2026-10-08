@@ -172,6 +172,19 @@ function body(me) {
     case 'roll':
       return rollBody();
     case 'read':
+      // The scene that says "check your phone" shows the whisper up front.
+      if (S.sceneId === 'suspects' && secret) {
+        return `<p class="eyebrow">${esc(sc.title)}</p>
+          <div class="whisper-card">
+            <p class="eyebrow">🤫 Only you can see this</p>
+            <h2>You noticed something…</h2>
+            <p class="whisper">${esc(secret)}</p>
+            <p class="muted small">Share it with the group, or keep it to yourself. It might not be the whole truth.</p>
+          </div>
+          ${tappedStep === S.step
+            ? '<p class="muted">Waiting for the story to continue…</p>'
+            : '<button id="continue" class="primary big">Continue ▶</button>'}`;
+      }
       return `<p class="eyebrow">${esc(sc.title)}</p>
         <h2>Read the big screen</h2>
         ${tappedStep === S.step
@@ -210,9 +223,9 @@ function rollBody() {
 }
 
 function secretView() {
-  if (!secret || S.phase === 'lobby') return '';
+  if (!secret || S.phase === 'lobby' || (S.phase === 'read' && S.sceneId === 'suspects')) return '';
   return `<footer class="secret">
-    <button id="secretToggle" class="ghost">🤫 Your private whisper · tap to ${showSecret ? 'hide' : 'reveal'}</button>
+    <button id="secretToggle" class="ghost">🤫 What you noticed at supper · tap to ${showSecret ? 'hide' : 'show'}</button>
     ${showSecret ? `<p>${esc(secret)}</p><p class="muted small">Share it with the group, or keep it to yourself.</p>` : ''}
   </footer>`;
 }
