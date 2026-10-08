@@ -17,6 +17,7 @@ let narrate = false;
 let voices = {};          // audio/manifest.json: line key → version hash
 let voice = null;         // the <audio> currently narrating
 let voiceQueue = [];      // clips still to play after it
+let narrationToken = 0;   // bumps on every new narration so stale 'finished' callbacks are ignored
 let lastRenderedStep = -1;
 let lastDieState = '';
 
@@ -121,7 +122,7 @@ function goTo(id) {
   if (sc.ending) S.phase = 'end';
   else if (choices.length) {
     S.phase = 'vote';
-    S.voteEndsAt = db.now() + G.VOTE_SECONDS * 1000;
+    S.voteEndsAt = 0; // the countdown starts when the narration finishes (see narrationFinished)
   } else S.phase = 'read';
 
   push();
@@ -130,7 +131,7 @@ function goTo(id) {
 }
 
 function checkVotes() {
-  if (S.phase !== 'vote') return;
+  if (S.phase !== 'vote' || !S.voteEndsAt) return; // let the narrator finish even if everyone voted early
   const cur = votes[stepKey()] || {};
   const list = active();
   if (list.length && list.every(p => cur[p.id] != null)) closeVote();
@@ -222,6 +223,7 @@ function restart() {
 
 // Picks up scheduled transitions if the host page was refreshed mid-game.
 function resume() {
+  if (S.phase === 'vote' && !S.voteEndsAt) narrationFinished();
   if (S.phase === 'result' && S.result) {
     pending = setTimeout(() => resolveChoice(G.choicesFor(S)[S.result.index]), 1500);
   } else if (S.phase === 'roll' && S.roll?.value) {
@@ -231,7 +233,7 @@ function resume() {
 
 function tick() {
   const now = db.now();
-  if (S.phase === 'vote' && now >= S.voteEndsAt) closeVote();
+  if (S.phase === 'vote' && S.voteEndsAt && now >= S.voteEndsAt) closeVote();
   if (S.phase === 'roll' && S.roll && !S.roll.value && now >= S.roll.endsAt) {
     applyRoll(1 + Math.floor(Math.random() * 20), true);
   }
@@ -254,6 +256,11 @@ function updateTimer() {
   const el = $('#timer');
   if (!el) return;
   const endsAt = S.phase === 'vote' ? S.voteEndsAt : S.roll?.endsAt;
+  if (!endsAt) {
+    el.querySelector('.fill').style.width = '100%';
+    el.querySelector('.secs').textContent = '🔊 Listening… the vote timer starts after the narrator';
+    return;
+  }
   const total = (S.phase === 'vote' ? G.VOTE_SECONDS : G.ROLL_SECONDS) * 1000;
   const left = Math.max(0, endsAt - db.now());
   el.querySelector('.fill').style.width = `${(left / total) * 100}%`;
@@ -261,21 +268,37 @@ function updateTimer() {
 }
 
 // Plays the scene's generated narration, or falls back to the browser's built-in voice.
+// Plays the scene's generated narration, or falls back to the browser's built-in voice.
+// When it ends (or can't play), the vote countdown starts.
 function speak() {
   stopVoice();
-  if (!narrate || !S.sceneId) return;
-  if (playVoices(G.narrationClips(S).map(c => c.key))) return;
-  if (!('speechSynthesis' in window)) return;
+  const token = ++narrationToken;
+  const done = () => { if (token === narrationToken) narrationFinished(); };
+  setTimeout(done, 120000); // safety net if an audio event never fires
+  if (!narrate || !S.sceneId) return done();
+  if (playVoices(G.narrationClips(S).map(c => c.key), done)) return;
+  if (!('speechSynthesis' in window)) return done();
   const sc = G.SCENES[S.sceneId];
   const text = [sc.title, ...G.sceneText(S)].join('. ')
     .replace(/<[^>]+>/g, '')
     .replace(/\p{Extended_Pictographic}/gu, '');
-  speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.onend = done;
+  utterance.onerror = done;
+  speechSynthesis.speak(utterance);
 }
 
-// Plays clips back to back. Returns false if any clip hasn't been generated,
-// so the caller can fall back to the browser voice for the whole scene.
-function playVoices(keys) {
+function narrationFinished() {
+  if (S.phase !== 'vote' || S.voteEndsAt) return;
+  S.voteEndsAt = db.now() + G.VOTE_SECONDS * 1000;
+  push();
+  render();
+  checkVotes();
+}
+
+// Plays clips back to back, then calls onDone. Returns false if any clip hasn't been
+// generated, so the caller can fall back to the browser voice for the whole scene.
+function playVoices(keys, onDone = () => {}) {
   if (!keys.length || !keys.every(k => voices[k])) return false;
   stopVoice();
   const clips = keys.map(k => {
@@ -284,12 +307,15 @@ function playVoices(keys) {
     return audio;
   });
   const next = () => {
+    if (voiceQueue !== clips) return; // stopped, or replaced by newer narration
     voice = clips.shift() || null;
     voiceQueue = clips;
-    if (!voice) return;
-    voice.addEventListener('ended', () => { if (voiceQueue === clips) next(); }, { once: true });
-    voice.play().catch(() => {}); // blocked until the page has been clicked once
+    if (!voice) return onDone();
+    voice.addEventListener('ended', next, { once: true });
+    voice.addEventListener('error', next, { once: true });
+    voice.play().catch(onDone); // autoplay blocked (page not clicked yet): don't hold up the game
   };
+  voiceQueue = clips;
   next();
   return true;
 }
@@ -304,7 +330,11 @@ function stopVoice() {
 function setNarrate(on) {
   narrate = on;
   if (on) speak();
-  else stopVoice();
+  else {
+    stopVoice();
+    narrationToken++;
+    narrationFinished();
+  }
   render();
 }
 

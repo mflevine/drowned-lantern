@@ -252,4 +252,4 @@ for (const key of Object.keys(manifest)) {
 }
 await writeFile(MANIFEST, JSON.stringify(manifest, null, 2) + '\n');
 
-console.log(`\nGenerated ${made} file(s), ${chars.toLocaleString()} characters. ${jobs.length - made} already up to date.`);
+console.log(`\nGenerated ${made} file(s), ${chars.toLocaleString()} characters. ${jobs.length - made} skipped (already up to date or not selected).`);

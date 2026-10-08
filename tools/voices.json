@@ -3,8 +3,8 @@
   "model": "eleven_v4",
   "voices": {
     "narrator": {
-      "id": "n1PvBOwxb8X6m7tahp2h",
-      "name": "Michael C. Vincent - Suspenseful Storyteller",
+      "id": "JBFqnCBsd6RMkjVDRZzb",
+      "name": "George",
       "want": "Warm, theatrical British storyteller. The dungeon master, relishing every twist.",
       "settings": {
         "speed": 0.95
@@ -19,8 +19,8 @@
       }
     },
     "pip": {
-      "id": "Z7RrOqZFTyLpIlzCgfsp",
-      "name": "Toby - Little Mythical Monster",
+      "id": "N2lVS1w4EtoT3dr4eOWO",
+      "name": "Callum",
       "want": "Jittery, fast-talking halfling innkeeper. Lighter, higher male voice, always on the edge of panic.",
       "settings": {
         "speed": 1.1
@@ -36,8 +36,8 @@
       }
     },
     "thorin": {
-      "id": "ljo9gAlSqKOvF6D8sOsX",
-      "name": "Viking Bjorn - Epic Medieval Raider",
+      "id": "SOYHLrjzK2X1ezoPC6cr",
+      "name": "Harry",
       "want": "Gruff, gravelly old dwarf warrior. Deep, proud, wounded.",
       "settings": {
         "speed": 0.92
@@ -52,8 +52,8 @@
       }
     },
     "halden": {
-      "id": "0lp4RIz96WD1RUtvEu3Q",
-      "name": "Grandfather Joe -  Gentle, warm & wise",
+      "id": "pqHfZKP75CvOlQylNhV4",
+      "name": "Bill",
       "want": "Middle-aged priest, deep and solemn, but tipsy and shaken tonight.",
       "settings": {
         "speed": 0.95
@@ -68,8 +68,8 @@
       }
     },
     "seraphine": {
-      "id": "TC0Zp7WVFzhA8zpTlRqV",
-      "name": "Aria - Sultry Villain",
+      "id": "pFZP5JQG7iQjIQuC4Bku",
+      "name": "Lily",
       "want": "Sultry, amused, dangerous merchant. Purring and unbothered.",
       "settings": {
         "speed": 0.95
@@ -84,8 +84,8 @@
       }
     },
     "lyra": {
-      "id": "KoVIHoyLDrQyd4pGalbs",
-      "name": "Autumn Veil - Warm and Reflective",
+      "id": "Xb7hH8MSUJpSbSDYk0k2",
+      "name": "Alice",
       "want": "Elven bard. Soft, musical and warm on the surface, cold steel underneath.",
       "settings": {
         "speed": 0.95

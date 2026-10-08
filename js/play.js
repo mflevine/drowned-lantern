@@ -162,7 +162,7 @@ function body(me) {
             <span class="letter">${LETTERS[i]}</span><span>${esc(label)}</span>
           </button>`).join('')}</div>
         <div class="timer" id="timer"><div class="fill"></div><span class="secs"></span></div>
-        <p class="muted small">${myVote == null ? 'Tap to vote.' : 'Vote locked in. You can change it until time runs out.'}</p>`;
+        <p class="muted small">${myVote == null ? (S.voteEndsAt ? 'Tap to vote.' : 'You can vote now. The timer starts when the narrator finishes.') : 'Vote locked in. You can change it until time runs out.'}</p>`;
     case 'result': {
       const r = S.result;
       return `<p class="eyebrow">The party chose</p>
@@ -248,6 +248,11 @@ function updateTimer() {
   const el = $('#timer');
   if (!el || !S) return;
   const endsAt = S.phase === 'vote' ? S.voteEndsAt : S.roll?.endsAt;
+  if (!endsAt) {
+    el.querySelector('.fill').style.width = '100%';
+    el.querySelector('.secs').textContent = '🔊 Listen to the narrator…';
+    return;
+  }
   const total = (S.phase === 'vote' ? G.VOTE_SECONDS : G.ROLL_SECONDS) * 1000;
   const now = db.now();
   el.querySelector('.fill').style.width = `${(Math.max(0, endsAt - now) / total) * 100}%`;
