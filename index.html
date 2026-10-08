@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕯️</text></svg>">
+  <title>Death at the Drowned Lantern</title>
+</head>
+<body class="phone">
+  <div id="app">
+    <div class="phone-card landing">
+      <div class="art">🕯️</div>
+      <p class="eyebrow">A D&amp;D murder mystery party game</p>
+      <h1>Death at the Drowned Lantern</h1>
+      <p>One screen tells the story. Up to six players vote on their phones.</p>
+      <a id="host" class="button primary big" href="host.html">Host a game on this screen</a>
+      <form id="joinForm">
+        <input id="code" maxlength="4" autocomplete="off" autocapitalize="characters" placeholder="ROOM CODE" required>
+        <button>Join</button>
+      </form>
+    </div>
+  </div>
+  <script>
+    // Carry ?local (demo mode) through to the other pages.
+    const local = new URLSearchParams(location.search).has('local');
+    if (local) document.getElementById('host').href = 'host.html?local';
+    document.getElementById('joinForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const code = document.getElementById('code').value.trim().toUpperCase();
+      location.href = 'play.html?room=' + encodeURIComponent(code) + (local ? '&local' : '');
+    });
+  </script>
+</body>
+</html>
