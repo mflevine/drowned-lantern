@@ -3,8 +3,8 @@
   "model": "eleven_v4",
   "voices": {
     "narrator": {
-      "id": "JBFqnCBsd6RMkjVDRZzb",
-      "name": "George",
+      "id": "n1PvBOwxb8X6m7tahp2h",
+      "name": "Michael C. Vincent - Suspenseful Storyteller",
       "want": "Warm, theatrical British storyteller. The dungeon master, relishing every twist.",
       "settings": {
         "speed": 0.95
@@ -19,8 +19,8 @@
       }
     },
     "pip": {
-      "id": "CYw3kZ02Hs0563khs1Fj",
-      "name": "Dave",
+      "id": "Z7RrOqZFTyLpIlzCgfsp",
+      "name": "Toby - Little Mythical Monster",
       "want": "Jittery, fast-talking halfling innkeeper. Lighter, higher male voice, always on the edge of panic.",
       "settings": {
         "speed": 1.1
@@ -36,8 +36,8 @@
       }
     },
     "thorin": {
-      "id": "2EiwWnXFnvU5JabPnv8n",
-      "name": "Clyde",
+      "id": "ljo9gAlSqKOvF6D8sOsX",
+      "name": "Viking Bjorn - Epic Medieval Raider",
       "want": "Gruff, gravelly old dwarf warrior. Deep, proud, wounded.",
       "settings": {
         "speed": 0.92
@@ -52,8 +52,8 @@
       }
     },
     "halden": {
-      "id": "onwK4e9ZLuTAKqWW03F9",
-      "name": "Daniel",
+      "id": "0lp4RIz96WD1RUtvEu3Q",
+      "name": "Grandfather Joe -  Gentle, warm & wise",
       "want": "Middle-aged priest, deep and solemn, but tipsy and shaken tonight.",
       "settings": {
         "speed": 0.95
@@ -68,8 +68,8 @@
       }
     },
     "seraphine": {
-      "id": "XB0fDUnXU5powFXDhCwa",
-      "name": "Charlotte",
+      "id": "TC0Zp7WVFzhA8zpTlRqV",
+      "name": "Aria - Sultry Villain",
       "want": "Sultry, amused, dangerous merchant. Purring and unbothered.",
       "settings": {
         "speed": 0.95
@@ -84,8 +84,8 @@
       }
     },
     "lyra": {
-      "id": "pFZP5JQG7iQjIQuC4Bku",
-      "name": "Lily",
+      "id": "KoVIHoyLDrQyd4pGalbs",
+      "name": "Autumn Veil - Warm and Reflective",
       "want": "Elven bard. Soft, musical and warm on the surface, cold steel underneath.",
       "settings": {
         "speed": 0.95

@@ -147,7 +147,7 @@ if (has('--audition')) {
     <p class="want">${esc(cast.voices[role].want)}</p>
     <ol>${list.map(sv => `<li>
       <div><b>${esc(sv.name)}</b> <span>${esc([sv.gender, sv.age?.replace('_', ' '), sv.accent, sv.descriptive].filter(Boolean).join(' · '))}</span>
-      ${sv.free_users_allowed ? '' : '<em>paid plans only</em>'} ${sv.rate > 1 ? `<em>costs ${sv.rate}× credits</em>` : ''}</div>
+      ${sv.rate > 1 ? `<em>costs ${sv.rate}× credits</em>` : ''}</div>
       <p>${esc(sv.description || '')}</p>
       ${sv.preview_url ? `<audio controls preload="none" src="${esc(sv.preview_url)}"></audio>` : ''}
     </li>`).join('')}</ol></section>`).join('');
@@ -157,7 +157,8 @@ h2{text-transform:capitalize;border-bottom:1px solid #4a3626;padding-bottom:.2em
 .want{color:#e0a84a;font-style:italic}li{margin:0 0 1.2em}li p{margin:.2em 0;color:#b39f82;font-size:.9em}
 span{color:#b39f82;font-size:.85em}em{color:#e07a6a;font-size:.8em;margin-left:.4em}audio{width:100%;height:32px}code{background:#2e221a;padding:.2em .4em;border-radius:4px}</style>
 <h1>Drowned Lantern voice audition</h1>
-<p>Pick a number for each role, then run <code>node tools/voices.mjs --cast pip=2,thorin=1,…</code></p>${sections}`);
+<p>Pick a number for each role, then run <code>node tools/voices.mjs --cast pip=2,thorin=1,…</code></p>
+<p><em>Voice Library voices can only be used through the API on a paid ElevenLabs plan (Starter or above). On the free plan, cast the built-in voices from <code>--list-voices</code> instead.</em></p>${sections}`);
   console.log('\nOpen tools/audition.html to listen, then cast with: node tools/voices.mjs --cast role=N,...');
   process.exit(0);
 }
