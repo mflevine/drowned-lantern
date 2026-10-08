@@ -66,6 +66,7 @@ export const WHISPERS = [
 
 // Scene fields:
 //   text: paragraphs. {marks} and {accused} are filled in at runtime.
+//         [audio tags] like [whispers] direct the voice actors (ElevenLabs v4) and are hidden on screen.
 //   choices: [{label, to}] or [{label, check: {skill, dc, pass, fail}}]
 //   next: scene to continue to when there are no choices
 //   clue: clue id granted on entering. location: consumes a candle-mark on entering.
@@ -76,34 +77,34 @@ export const SCENES = {
     speaker: 'pip',
     art: '⛈️', title: 'A Storm at the Drowned Lantern',
     text: [
-      'Rain hammers the Drowned Lantern, a crooked inn on the High Road. The river has swallowed the only bridge, so nobody leaves tonight.',
-      "At the stroke of midnight a scream splits the storm. Lord Aldric Vane, the King's Magistrate, lies dead in his room with a dwarven dagger buried in his chest.",
-      'Pip Underbough, the halfling innkeeper, grabs your sleeve. "You\'re adventurers, aren\'t you? The bridge opens at dawn, and the killer will walk right out. Please, find them before then."',
+      '[ominously] Rain hammers the Drowned Lantern, a crooked inn on the High Road. The river has swallowed the only bridge, so nobody leaves tonight.',
+      "[pause] At the stroke of midnight a scream splits the storm. [gravely] Lord Aldric Vane, the King's Magistrate, lies dead in his room with a dwarven dagger buried in his chest.",
+      'Pip Underbough, the halfling innkeeper, grabs your sleeve. "[panicked, breathless] You\'re adventurers, aren\'t you? The bridge opens at dawn, and the killer will walk right out. [desperately] Please, find them before then."',
     ],
     next: 'suspects',
   },
   suspects: {
     art: '🕯️', title: 'The Guests',
     text: [
-      'Five people besides your party are trapped here tonight:',
+      '[conspiratorially] Five people besides your party are trapped here tonight:',
       "🪓 <b>Thorin Ashmantle</b>, Vane's dwarf bodyguard. It was his dagger.",
       '☀️ <b>Brother Halden</b>, a priest of Lathander traveling with Vane.',
       '🔥 <b>Seraphine Vell</b>, a tiefling merchant whose cargo Vane meant to seize.',
       '🎻 <b>Lyra Moonwhisper</b>, an elven bard who sang for the lord at supper.',
       '🍺 <b>Pip Underbough</b>, the innkeeper who begged for your help.',
-      'Dawn is four candle-marks away, and every search burns one. <b>Check your phone:</b> each of you noticed something at supper.',
+      '[gravely] Dawn is four candle-marks away, and every search burns one. <b>Check your phone:</b> each of you noticed something at supper.',
     ],
     next: 'hub',
   },
   hub: {
     art: '🕯️', title: 'The Candle Burns', hub: true,
-    text: ['The storm howls against the shutters. Dawn is {marks} away.', 'Where does the party search next?'],
+    text: ['[ominously] The storm howls against the shutters. [urgently] Dawn is {marks} away.', '[eagerly] Where does the party search next?'],
   },
   dawn: {
     art: '🌅', title: 'First Light',
     text: [
-      'The last candle gutters out. Grey light seeps under the door, and the river is falling fast.',
-      'Everyone gathers in the common room. Before the bridge opens, you must name the killer.',
+      '[softly] The last candle gutters out. Grey light seeps under the door, and the river is falling fast.',
+      'Everyone gathers in the common room. [dramatically] Before the bridge opens, you must name the killer.',
     ],
     next: 'accuse',
   },
@@ -111,14 +112,14 @@ export const SCENES = {
     art: '⚖️', title: 'Name the Killer', accuse: true,
     text: [
       'The guests stand around the dying fire. Thorin grips his empty sheath, Halden mutters prayers, Seraphine smiles thinly, Lyra tunes her lute, and Pip wrings his apron.',
-      'Review your clues. Who murdered Lord Aldric Vane?',
+      'Review your clues. [pause] [slowly, dramatically] Who murdered Lord Aldric Vane?',
     ],
   },
 
   // --- Vane's chamber ---
   loc_body: {
     art: '🛏️', title: "Lord Vane's Chamber", location: 'body',
-    text: ["Vane lies sprawled beside an overturned chair with Thorin's dagger in his chest. A half-finished goblet of wine sits on the desk. The window is latched from the inside."],
+    text: ["[grimly] Vane lies sprawled beside an overturned chair with Thorin's dagger in his chest. A half-finished goblet of wine sits on the desk. The window is latched from the inside."],
     choices: [
       { label: '🩺 Examine the wound (Medicine, DC 11)', check: { skill: 'Medicine', dc: 11, pass: 'body_wound', fail: 'body_rune' } },
       { label: '🍷 Sniff the wine goblet', to: 'body_goblet' },
@@ -129,28 +130,28 @@ export const SCENES = {
     art: '🩸', title: 'A Bloodless Wound', clue: 'wound', next: 'hub',
     text: [
       "You kneel by the body. The stab wound has barely bled, and Vane's lips are tinged blue.",
-      'He was dead before the blade ever touched him. Someone poisoned him, then used the dagger to mislead.',
+      '[gasps] He was dead before the blade ever touched him. Someone poisoned him, then used the dagger to mislead.',
     ],
   },
   body_goblet: {
     art: '🍷', title: 'Midnight Tears', clue: 'goblet', next: 'hub',
     text: [
       'The wine smells cloyingly sweet, like night-blooming flowers.',
-      'You recognize it: Midnight Tears, a rare poison sold only by smugglers on the Sword Coast.',
+      'You recognize it: [whispers] Midnight Tears, a rare poison sold only by smugglers on the Sword Coast.',
     ],
   },
   body_music: {
     art: '🎼', title: 'A Scrap of Song', clue: 'music', next: 'hub',
     text: [
       'Behind the door, snagged on the latch, you find a torn corner of sheet music.',
-      'The notes are written in elvish script. They are the opening bars of a lullaby.',
+      'The notes are written in elvish script. [eerily] They are the opening bars of a lullaby.',
     ],
   },
   body_rune: {
     art: '🪓', title: 'The Ashmantle Rune', clue: 'rune', next: 'hub',
     text: [
       "You find nothing unusual except the dagger itself.",
-      'Its hilt bears the Ashmantle family rune. There is no doubt it belongs to Thorin.',
+      '[ominously] Its hilt bears the Ashmantle family rune. There is no doubt it belongs to Thorin.',
     ],
   },
 
@@ -159,7 +160,7 @@ export const SCENES = {
     art: '🍺', title: 'The Common Room', location: 'bar',
     text: [
       'Pip polishes the same mug over and over. The fire has burned low.',
-      'In the corner, Lyra idly tunes her lute and watches you over the strings.',
+      '[mysteriously] In the corner, Lyra idly tunes her lute and watches you over the strings.',
     ],
     choices: [
       { label: '🍷 Ask Pip who took the lord his wine', to: 'bar_wine' },
@@ -171,15 +172,15 @@ export const SCENES = {
     speaker: 'pip',
     art: '🫗', title: 'A Helpful Bard', clue: 'wine', next: 'hub',
     text: [
-      '"His lordship\'s wine? The bard took it up," Pip says. "Insisted on it. Said she\'d sing him a private song to make up for something."',
-      '"I thought it was sweet of her, at the time."',
+      '"[cheerfully] His lordship\'s wine? The bard took it up," Pip says. "Insisted on it. Said she\'d sing him a private song to make up for something."',
+      '"[slowly realizing] I thought it was sweet of her, at the time."',
     ],
   },
   bar_cellar: {
     speaker: 'pip',
     art: '🕯️', title: "Pip's Alibi", clue: 'cellar', next: 'hub',
     text: [
-      'Pip squeaks and confesses. "I was in the cellar! Brother Halden was down there, drunk on my best red. I was hauling him back up the stairs when the scream came."',
+      'Pip squeaks and confesses. "[squeaking, panicked] I was in the cellar! Brother Halden was down there, drunk on my best red. I was hauling him back up the stairs when the scream came."',
       'That accounts for both of them at midnight.',
     ],
   },
@@ -187,15 +188,15 @@ export const SCENES = {
     speaker: 'pip',
     art: '😶', title: 'Nothing to Say', next: 'hub',
     text: [
-      'Pip flinches and clams up. "I\'ve told you everything! Please, I just want this night to end."',
+      'Pip flinches and clams up. "[whimpering] I\'ve told you everything! Please, I just want this night to end."',
       "The fire crackles. You've learned nothing, and the candle burns lower.",
     ],
   },
   bar_lute: {
     art: '✨', title: 'A Lingering Lullaby', clue: 'lute', next: 'hub',
     text: [
-      'Lyra hands it over with a smile. As you touch the strings, a soft warmth crawls up your arm and your eyelids grow heavy.',
-      'Someone used this lute to cast a sleep enchantment tonight. Lyra takes it back a little too quickly.',
+      'Lyra hands it over with a smile. As you touch the strings, a soft warmth crawls up your arm and [drowsily] your eyelids grow heavy.',
+      'Someone used this lute to cast a sleep enchantment tonight. [suspiciously] Lyra takes it back a little too quickly.',
     ],
   },
   bar_lute_fail: {
@@ -203,7 +204,7 @@ export const SCENES = {
     art: '🎻', title: 'Just a Lute', next: 'hub',
     text: [
       "It's a fine elven instrument, but if it holds any secrets, they're beyond you.",
-      '"Careful, darling, it\'s older than your grandmother," Lyra says, taking it back.',
+      '"[laughs softly] Careful, darling, it\'s older than your grandmother," Lyra says, taking it back.',
     ],
   },
 
@@ -213,7 +214,7 @@ export const SCENES = {
     art: '🐴', title: 'The Stables', location: 'guard',
     text: [
       'Thorin Ashmantle sits on a hay bale, turning his empty sheath over in his hands.',
-      '"I didn\'t kill him," he growls. "But I failed him all the same."',
+      '"[growling] I didn\'t kill him," he growls. "[bitterly] But I failed him all the same."',
     ],
     choices: [
       { label: '🗡️ Ask how he lost his dagger', to: 'guard_dagger' },
@@ -224,8 +225,8 @@ export const SCENES = {
     speaker: 'thorin',
     art: '💤', title: 'A Guard Who Never Sleeps', clue: 'dagger', next: 'hub',
     text: [
-      '"Thirty years I\'ve stood watch. Never once slept on duty," Thorin says.',
-      '"Tonight I sat by the fire while the elf sang. Next thing I know, I\'m waking up, my blade is gone, and the lord is dead."',
+      '"[proudly] Thirty years I\'ve stood watch. Never once slept on duty," Thorin says.',
+      '"[ashamed] Tonight I sat by the fire while the elf sang. Next thing I know, I\'m waking up, my blade is gone, and the lord is dead."',
     ],
   },
   guard_truth: {
@@ -233,7 +234,7 @@ export const SCENES = {
     art: '🧔', title: 'An Honest Dwarf', clue: 'dagger', next: 'hub',
     text: [
       "Thorin's shame is real. You'd bet your life he's telling the truth.",
-      '"It was the elf\'s song," he mutters. "I closed my eyes for one verse and woke an hour later. My dagger was gone from my belt."',
+      '"[mutters darkly] It was the elf\'s song," he mutters. "I closed my eyes for one verse and woke an hour later. My dagger was gone from my belt."',
     ],
   },
   guard_grudge: {
@@ -241,14 +242,14 @@ export const SCENES = {
     art: '😠', title: 'Bad Blood', clue: 'grudge', next: 'hub',
     text: [
       "You can't read him, but Thorin isn't hiding his anger.",
-      '"Three months\' pay he owed me. I won\'t miss him. But I didn\'t kill him."',
+      '"[angrily] Three months\' pay he owed me. I won\'t miss him. But I didn\'t kill him."',
     ],
   },
 
   // --- Prayer nook ---
   loc_chapel: {
     art: '☀️', title: 'The Prayer Nook', location: 'chapel',
-    text: ['Brother Halden kneels before a little sunburst shrine. His hands shake, and he reeks of wine.'],
+    text: ['[hushed] Brother Halden kneels before a little sunburst shrine. His hands shake, and he reeks of wine.'],
     choices: [
       { label: '📜 Ask about his argument with Vane at supper', to: 'chapel_debt' },
       { label: '🤝 Calm him and ask what he saw (Persuasion, DC 12)', check: { skill: 'Persuasion', dc: 12, pass: 'chapel_witness', fail: 'chapel_debt' } },
@@ -258,16 +259,16 @@ export const SCENES = {
     speaker: 'halden',
     art: '📜', title: "The Temple's Debt", clue: 'debt', next: 'hub',
     text: [
-      '"Vane held the temple\'s debts," Halden admits. "He meant to call them in and turn the orphans out. Yes, we quarrelled."',
-      'He meets your eyes. "But Lathander forbids murder. I would never."',
+      '"[slurring slightly] Vane held the temple\'s debts," Halden admits. "He meant to call them in and turn the orphans out. Yes, we quarrelled."',
+      'He meets your eyes. "[solemnly] But Lathander forbids murder. I would never."',
     ],
   },
   chapel_witness: {
     speaker: 'halden',
     art: '👁️', title: 'A Figure at the Door', clue: 'witness', next: 'hub',
     text: [
-      'Halden takes a shaky breath. "Near midnight I went down for... more wine. On the way I passed his lordship\'s door."',
-      '"Someone slipped out. Slender, light on their feet, carrying a lute case. I thought nothing of it until now."',
+      'Halden takes a shaky breath. "[nervously] Near midnight I went down for... [hiccups] more wine. On the way I passed his lordship\'s door."',
+      '"[whispers] Someone slipped out. Slender, light on their feet, carrying a lute case. I thought nothing of it until now."',
     ],
   },
 
@@ -277,7 +278,7 @@ export const SCENES = {
     art: '🔥', title: "Seraphine's Room", location: 'merchant',
     text: [
       'Seraphine Vell sits by her hearth, feeding papers into the flames one by one. Her tail flicks lazily.',
-      '"Can I help you, darlings?"',
+      '"[purring, seductively] Can I help you, darlings?"',
     ],
     choices: [
       { label: '🔥 Snatch the papers from the fire (Sleight of Hand, DC 12)', check: { skill: 'Sleight of Hand', dc: 12, pass: 'merchant_ledger', fail: 'merchant_ashes' } },
@@ -288,7 +289,7 @@ export const SCENES = {
     art: '📒', title: 'The Singed Ledger', clue: 'ledger', next: 'hub',
     text: [
       "You pluck a smouldering ledger from the coals. Seraphine hisses but doesn't stop you.",
-      'Most of it is smuggling records. One line stands out: "1 vial Midnight Tears, sold to L.M., paid in silver."',
+      'Most of it is smuggling records. [dramatically] One line stands out: "1 vial Midnight Tears, sold to L.M., paid in silver."',
     ],
   },
   merchant_ashes: {
@@ -296,15 +297,15 @@ export const SCENES = {
     art: '🔥', title: 'Ashes', clue: 'ashes', next: 'hub',
     text: [
       'Your fingers close on nothing but ash. Seraphine laughs.',
-      '"Old love letters, darling. Nothing that would interest you."',
+      '"[laughs] Old love letters, darling. Nothing that would interest you."',
     ],
   },
   merchant_cargo: {
     speaker: 'seraphine',
     art: '📦', title: 'Smuggled Silk', clue: 'cargo', next: 'hub',
     text: [
-      '"Untaxed Calishite silk," Seraphine says with a shrug. "Vane was going to seize my wagons and ruin me."',
-      '"Am I sorry he\'s dead? Not at all. Did I kill him? Darling, I\'m a smuggler, not a fool."',
+      '"[casually] Untaxed Calishite silk," Seraphine says with a shrug. "Vane was going to seize my wagons and ruin me."',
+      '"[mischievously] Am I sorry he\'s dead? Not at all. Did I kill him? [laughs] Darling, I\'m a smuggler, not a fool."',
     ],
   },
 
@@ -312,7 +313,7 @@ export const SCENES = {
   loc_bard: {
     art: '🎻', title: "Lyra's Room", location: 'bard',
     text: [
-      'Lyra is downstairs in the common room. Her own room is tidy, almost too tidy.',
+      'Lyra is downstairs in the common room. Her own room is tidy, [suspiciously] almost too tidy.',
       'A lute case lies on the bed, and a bundle of letters sits on the desk.',
     ],
     choices: [
@@ -323,7 +324,7 @@ export const SCENES = {
   bard_vial: {
     art: '🧪', title: 'The Empty Vial', clue: 'vial', next: 'hub',
     text: [
-      'Under the velvet lining of the case, your fingers find a tiny glass vial. It is empty.',
+      'Under the velvet lining of the case, your fingers find a tiny glass vial. [whispers] It is empty.',
       'When you uncork it, the room fills with the sickly-sweet scent of night-blooming flowers.',
     ],
   },
@@ -331,7 +332,7 @@ export const SCENES = {
     art: '🎻', title: 'Rosin and Strings', next: 'hub',
     text: [
       'Spare strings, a cake of rosin, a few copper coins. Nothing more.',
-      'Footsteps on the stairs! You slip out before anyone sees you.',
+      '[urgently] Footsteps on the stairs! You slip out before anyone sees you.',
     ],
   },
   bard_letters: {
@@ -339,7 +340,7 @@ export const SCENES = {
     art: '⚖️', title: 'A Brother Hanged', clue: 'motive', next: 'hub',
     text: [
       'Under the letters lies a yellowed notice: "Elric Moonwhisper, hanged for theft by order of Magistrate Aldric Vane."',
-      'On top, in fresh ink: "Dear brother, tonight I will sing for you one last time."',
+      'On top, in fresh ink: "[softly, grieving] Dear brother, tonight I will sing for you one last time."',
     ],
   },
 
@@ -348,9 +349,9 @@ export const SCENES = {
     speaker: ['narrator', 'lyra', 'lyra'],
     art: '🏆', title: 'The Last Song', ending: true, win: true,
     text: [
-      '"Lyra Moonwhisper." The room goes silent as you lay out the evidence piece by piece.',
-      'The bard\'s smile fades. "He hanged my brother over a loaf of bread," she says quietly. "I poisoned his wine, sang the dwarf to sleep, and borrowed his dagger so no one would suspect a song."',
-      'At dawn Lyra crosses the bridge in chains. Justice is done, though nobody feels much like celebrating. <b>The party solved the murder!</b>',
+      '"[dramatically] Lyra Moonwhisper." The room goes silent as you lay out the evidence piece by piece.',
+      'The bard\'s smile fades. "[quietly, bitter] He hanged my brother over a loaf of bread," she says quietly. "[coldly] I poisoned his wine, sang the dwarf to sleep, and borrowed his dagger so no one would suspect a song."',
+      'At dawn Lyra crosses the bridge in chains. Justice is done, though nobody feels much like celebrating. <b>[triumphantly] The party solved the murder!</b>',
     ],
   },
   end_escape: {
@@ -358,15 +359,15 @@ export const SCENES = {
     text: [
       'You name Lyra Moonwhisper, but your evidence is thin. She laughs it off, and the others aren\'t convinced.',
       'At dawn the bard strolls across the bridge, humming. Weeks later you hear the truth: Vane hanged her brother years ago, and she poisoned his wine to avenge him.',
-      '<b>You had the right name but not enough proof.</b>',
+      '[sighs] <b>You had the right name but not enough proof.</b>',
     ],
   },
   end_wrong: {
     art: '💀', title: 'The Wrong Neck', ending: true,
     text: [
       'You accuse {accused}. The guests turn on them, and at dawn they are dragged off in irons, protesting all the way.',
-      'In the common room, Lyra Moonwhisper plays a soft, sad tune, then slips away across the bridge.',
-      'Months later the truth comes out. Vane had hanged Lyra\'s brother. She poisoned his wine, sang Thorin to sleep, and planted his dagger. <b>The real killer walked free.</b>',
+      '[softly] In the common room, Lyra Moonwhisper plays a soft, sad tune, then slips away across the bridge.',
+      '[pause] Months later the truth comes out. Vane had hanged Lyra\'s brother. She poisoned his wine, sang Thorin to sleep, and planted his dagger. <b>[ominously] The real killer walked free.</b>',
     ],
   },
 };
@@ -392,12 +393,15 @@ export function endingFor(accused, clues) {
   return leadsFound(clues) >= LEADS_NEEDED ? 'end_justice' : 'end_escape';
 }
 
+// Audio tags are for the voice actors only.
+export const stripTags = text => text.replace(/\[[^\]]*\]\s*/g, '');
+
 export function sceneText(S) {
   const sc = SCENES[S.sceneId];
   if (!sc) return [];
   const marks = `${S.marksLeft} candle-mark${S.marksLeft === 1 ? '' : 's'}`;
   const accused = SUSPECTS[S.accused]?.name || 'someone';
-  return sc.text.map(p => p.replaceAll('{marks}', marks).replaceAll('{accused}', accused));
+  return sc.text.map(p => stripTags(p).replaceAll('{marks}', marks).replaceAll('{accused}', accused));
 }
 
 // --- Narration audio (generated by tools/voices.mjs into audio/) ---
@@ -453,10 +457,10 @@ export function narrationStates() {
 
 // The narrator's over-the-top reaction when a d20 lands.
 export const ROLL_LINES = {
-  'roll-nat20': 'A natural twenty! The very gods bow before you!',
-  'roll-nat1': 'A natural one. Oh no. Oh no, no, no.',
-  'roll-success': 'Success!',
-  'roll-failure': 'Failure. How... unfortunate.',
+  'roll-nat20': '[shouting with excitement] A NATURAL TWENTY! [gasps] The very gods bow before you!',
+  'roll-nat1': '[long pause] A natural one. [sighs] Oh no. [whispers] Oh no, no, no.',
+  'roll-success': '[triumphantly] Success!',
+  'roll-failure': '[sarcastic] Failure. How... unfortunate.',
 };
 
 export function rollAudioKey(roll) {

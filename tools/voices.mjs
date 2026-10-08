@@ -36,7 +36,7 @@ const clean = html => html
 // Splits a clip into narrator lines and "quoted" character lines.
 // `quote` counts quotes across the whole scene so list-style `speaker`s line up.
 function segmentsFor(scene, clip, counter) {
-  const segs = clip.title ? [{ voice: 'narrator', text: `${clean(scene.title)}. <break time="0.8s" />` }] : [];
+  const segs = clip.title ? [{ voice: 'narrator', text: `${clean(scene.title)}. [pause]` }] : [];
   for (const para of clip.parts) {
     for (const part of clean(para).split(/("[^"]+")/)) {
       const text = part.trim();
@@ -114,11 +114,8 @@ if (has('--list-voices')) {
 
 async function tts({ voice, text }) {
   const v = cast.voices[voice];
-  const body = {
-    text,
-    model_id: cast.model,
-    voice_settings: { stability: v.stability, similarity_boost: 0.75, style: v.style, use_speaker_boost: true },
-  };
+  const body = { text, model_id: cast.model };
+  if (v.settings) body.voice_settings = v.settings;
   for (let attempt = 1; ; attempt++) {
     const res = await fetch(`${API}/text-to-speech/${v.id}?output_format=mp3_44100_128`, {
       method: 'POST',
@@ -132,6 +129,21 @@ async function tts({ voice, text }) {
       continue;
     }
     throw new Error(`ElevenLabs ${res.status} voicing ${voice} (${v.name}, ${v.id}): ${detail}`);
+  }
+}
+
+// Make sure every cast voice is on this account before spending any credits.
+{
+  const res = await fetch(`${API}/voices`, { headers: { 'xi-api-key': apiKey } });
+  if (!res.ok) throw new Error(`ElevenLabs ${res.status}: ${await res.text()}`);
+  const available = new Set((await res.json()).voices.map(v => v.voice_id));
+  const missing = Object.entries(cast.voices).filter(([, v]) => !available.has(v.id));
+  if (missing.length) {
+    console.error('These cast voices are not on your ElevenLabs account:\n');
+    for (const [role, v] of missing) console.error(`  ${role.padEnd(10)} ${v.name} (${v.id})\n             wanted: ${v.want}\n`);
+    console.error('Find a match in the Voice Library (elevenlabs.io/app/voice-library), add it to My Voices,');
+    console.error('then put its id in tools/voices.json. `node tools/voices.mjs --list-voices` shows what you have.');
+    process.exit(1);
   }
 }
 

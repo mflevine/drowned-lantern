@@ -44,10 +44,11 @@ node tools/voices.mjs                           # generate audio/*.mp3 + audio/m
 git add audio && git commit -m "Add voices" && git push
 ```
 
-- The whole story is about 8,400 characters, which fits in the ElevenLabs free tier (10,000 credits a month) with a little room for retakes. The $5 Starter plan gives 30,000.
+- The whole story is about 8,800 characters, which fits in the ElevenLabs free tier (10,000 credits a month) with a little room for retakes. The $5 Starter plan gives 30,000.
 - Scenes are recorded as clips. Sentences that change at runtime ("Dawn is 3 candle-marks away", "You accuse Thorin Ashmantle") get their own short clip per value, and the rest of the scene is recorded once and shared. The TV plays a scene's clips back to back.
 - Re-running only regenerates lines whose text or voice changed. `--only intro,hub-4` redoes specific lines, and `--force` redoes everything.
-- Casting lives in `tools/voices.json`. Run `node tools/voices.mjs --list-voices` to see the voices on your account and swap any id. Lower `stability` and higher `style` make the delivery more over the top.
+- Voices are generated with ElevenLabs `eleven_v4`, which follows audio tags. Tags like `[whispers]`, `[growling]` or `[laughs]` are written straight into the story text in `js/story.js`. They direct the delivery and are hidden on the TV.
+- Casting lives in `tools/voices.json`. Each role has a `want` description of the ideal voice. Before generating anything, the script checks that every cast voice is on your account and lists any that are missing. Run `node tools/voices.mjs --list-voices` to see what you have, or find a better match in the ElevenLabs Voice Library and paste its id.
 - Who voices each "quoted" line is set by `speaker` on each scene in `js/story.js`.
 - Scenes without an MP3 fall back to the browser's built-in voice. The 🔊 button on the TV mutes the narration, and ↻ replays it.
 

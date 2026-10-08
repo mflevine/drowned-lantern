@@ -1,12 +1,36 @@
 {
-  "_comment": "Voice casting for tools/voices.mjs. Run `node tools/voices.mjs --list-voices` to see the voices on your account and swap any id. stability: lower = more dramatic. style: higher = more exaggerated (0-1).",
-  "model": "eleven_multilingual_v2",
+  "_comment": "Voice casting for tools/voices.mjs. `want` describes the ideal voice: if a voice isn't on your account or doesn't fit, search the ElevenLabs Voice Library for that description, add the voice to My Voices, and paste its id here. `node tools/voices.mjs --list-voices` shows the voices available to you. `settings` is sent as voice_settings (speed: 0.7-1.2).",
+  "model": "eleven_v4",
   "voices": {
-    "narrator":  { "id": "JBFqnCBsd6RMkjVDRZzb", "name": "George",    "stability": 0.35, "style": 0.65 },
-    "pip":       { "id": "CYw3kZ02Hs0563khs1Fj", "name": "Dave",      "stability": 0.25, "style": 0.8 },
-    "thorin":    { "id": "2EiwWnXFnvU5JabPnv8n", "name": "Clyde",     "stability": 0.3,  "style": 0.75 },
-    "halden":    { "id": "onwK4e9ZLuTAKqWW03F9", "name": "Daniel",    "stability": 0.3,  "style": 0.7 },
-    "seraphine": { "id": "XB0fDUnXU5powFXDhCwa", "name": "Charlotte", "stability": 0.3,  "style": 0.85 },
-    "lyra":      { "id": "pFZP5JQG7iQjIQuC4Bku", "name": "Lily",      "stability": 0.35, "style": 0.7 }
+    "narrator": {
+      "id": "JBFqnCBsd6RMkjVDRZzb", "name": "George",
+      "want": "Warm, theatrical British storyteller. The dungeon master, relishing every twist.",
+      "settings": { "speed": 0.95 }
+    },
+    "pip": {
+      "id": "CYw3kZ02Hs0563khs1Fj", "name": "Dave",
+      "want": "Jittery, fast-talking halfling innkeeper. Lighter, higher male voice, always on the edge of panic.",
+      "settings": { "speed": 1.1 }
+    },
+    "thorin": {
+      "id": "2EiwWnXFnvU5JabPnv8n", "name": "Clyde",
+      "want": "Gruff, gravelly old dwarf warrior. Deep, proud, wounded.",
+      "settings": { "speed": 0.92 }
+    },
+    "halden": {
+      "id": "onwK4e9ZLuTAKqWW03F9", "name": "Daniel",
+      "want": "Middle-aged priest, deep and solemn, but tipsy and shaken tonight.",
+      "settings": { "speed": 0.95 }
+    },
+    "seraphine": {
+      "id": "XB0fDUnXU5powFXDhCwa", "name": "Charlotte",
+      "want": "Sultry, amused, dangerous merchant. Purring and unbothered.",
+      "settings": { "speed": 0.95 }
+    },
+    "lyra": {
+      "id": "pFZP5JQG7iQjIQuC4Bku", "name": "Lily",
+      "want": "Elven bard. Soft, musical and warm on the surface, cold steel underneath.",
+      "settings": { "speed": 0.95 }
+    }
   }
 }
