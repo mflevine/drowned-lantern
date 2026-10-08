@@ -136,10 +136,12 @@ function render() {
     <header class="phone-head">
       <span class="avatar">${c.icon}</span>
       <span><b>${esc(me.name)}</b><small>${c.name}</small></span>
+      ${hasClueButton() ? `<button id="secretToggle" class="clue-chip ${showSecret ? 'open' : ''}" aria-expanded="${showSecret}">🤫 Clue</button>` : ''}
       <span class="code-chip">${esc(code)}</span>
     </header>
-    <main class="phone-body">${body(me)}</main>
-    ${secretView()}`;
+    ${hasClueButton() && showSecret ? `<div class="clue-panel"><p>${esc(secret)}</p>
+      <p class="muted small">What you noticed at supper. Share it, or keep it to yourself.</p></div>` : ''}
+    <main class="phone-body">${body(me)}</main>`;
   bind();
   updateTimer();
 }
@@ -222,12 +224,10 @@ function rollBody() {
     <div class="timer" id="timer"><div class="fill"></div><span class="secs"></span></div>`;
 }
 
-function secretView() {
-  if (!secret || S.phase === 'lobby' || (S.phase === 'read' && S.sceneId === 'suspects')) return '';
-  return `<footer class="secret">
-    <button id="secretToggle" class="ghost">🤫 What you noticed at supper · tap to ${showSecret ? 'hide' : 'show'}</button>
-    ${showSecret ? `<p>${esc(secret)}</p><p class="muted small">Share it with the group, or keep it to yourself.</p>` : ''}
-  </footer>`;
+// The clue lives in the header so it's always one tap away without scrolling.
+// It's hidden on the scene that already shows it as a big card.
+function hasClueButton() {
+  return !!secret && S.phase !== 'lobby' && !(S.phase === 'read' && S.sceneId === 'suspects');
 }
 
 function bind() {
