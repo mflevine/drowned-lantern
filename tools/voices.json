@@ -1,36 +1,104 @@
 {
-  "_comment": "Voice casting for tools/voices.mjs. `want` describes the ideal voice: if a voice isn't on your account or doesn't fit, search the ElevenLabs Voice Library for that description, add the voice to My Voices, and paste its id here. `node tools/voices.mjs --list-voices` shows the voices available to you. `settings` is sent as voice_settings (speed: 0.7-1.2).",
+  "_comment": "Voice casting for tools/voices.mjs. `want` describes the ideal voice. `node tools/voices.mjs --audition` searches the ElevenLabs Voice Library with each role's `search` terms and builds tools/audition.html to listen to the options; `--cast pip=2,thorin=1` adds your picks to your account and updates the ids here. `settings` is sent as voice_settings (speed: 0.7-1.2).",
   "model": "eleven_v4",
   "voices": {
     "narrator": {
-      "id": "JBFqnCBsd6RMkjVDRZzb", "name": "George",
+      "id": "JBFqnCBsd6RMkjVDRZzb",
+      "name": "George",
       "want": "Warm, theatrical British storyteller. The dungeon master, relishing every twist.",
-      "settings": { "speed": 0.95 }
+      "settings": {
+        "speed": 0.95
+      },
+      "search": {
+        "terms": [
+          "storyteller",
+          "fantasy narrator",
+          "dungeon master"
+        ],
+        "gender": "male"
+      }
     },
     "pip": {
-      "id": "CYw3kZ02Hs0563khs1Fj", "name": "Dave",
+      "id": "CYw3kZ02Hs0563khs1Fj",
+      "name": "Dave",
       "want": "Jittery, fast-talking halfling innkeeper. Lighter, higher male voice, always on the edge of panic.",
-      "settings": { "speed": 1.1 }
+      "settings": {
+        "speed": 1.1
+      },
+      "search": {
+        "terms": [
+          "nervous",
+          "anxious",
+          "halfling",
+          "goblin"
+        ],
+        "gender": "male"
+      }
     },
     "thorin": {
-      "id": "2EiwWnXFnvU5JabPnv8n", "name": "Clyde",
+      "id": "2EiwWnXFnvU5JabPnv8n",
+      "name": "Clyde",
       "want": "Gruff, gravelly old dwarf warrior. Deep, proud, wounded.",
-      "settings": { "speed": 0.92 }
+      "settings": {
+        "speed": 0.92
+      },
+      "search": {
+        "terms": [
+          "dwarf",
+          "gravelly warrior",
+          "old soldier"
+        ],
+        "gender": "male"
+      }
     },
     "halden": {
-      "id": "onwK4e9ZLuTAKqWW03F9", "name": "Daniel",
+      "id": "onwK4e9ZLuTAKqWW03F9",
+      "name": "Daniel",
       "want": "Middle-aged priest, deep and solemn, but tipsy and shaken tonight.",
-      "settings": { "speed": 0.95 }
+      "settings": {
+        "speed": 0.95
+      },
+      "search": {
+        "terms": [
+          "priest",
+          "monk",
+          "wise old"
+        ],
+        "gender": "male"
+      }
     },
     "seraphine": {
-      "id": "XB0fDUnXU5powFXDhCwa", "name": "Charlotte",
+      "id": "XB0fDUnXU5powFXDhCwa",
+      "name": "Charlotte",
       "want": "Sultry, amused, dangerous merchant. Purring and unbothered.",
-      "settings": { "speed": 0.95 }
+      "settings": {
+        "speed": 0.95
+      },
+      "search": {
+        "terms": [
+          "seductive",
+          "sultry villain",
+          "femme fatale"
+        ],
+        "gender": "female"
+      }
     },
     "lyra": {
-      "id": "pFZP5JQG7iQjIQuC4Bku", "name": "Lily",
+      "id": "pFZP5JQG7iQjIQuC4Bku",
+      "name": "Lily",
       "want": "Elven bard. Soft, musical and warm on the surface, cold steel underneath.",
-      "settings": { "speed": 0.95 }
+      "settings": {
+        "speed": 0.95
+      },
+      "search": {
+        "terms": [
+          "ethereal",
+          "enchanting",
+          "mysterious elegant",
+          "fantasy"
+        ],
+        "gender": "female"
+      }
     }
   }
 }

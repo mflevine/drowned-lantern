@@ -11,6 +11,8 @@
 //   node tools/voices.mjs --only intro,hub-4         regenerate specific lines
 //   node tools/voices.mjs --force                    regenerate everything
 //   node tools/voices.mjs --list-voices              show the voices on your account
+//   node tools/voices.mjs --audition                 search the Voice Library for each role → tools/audition.html
+//   node tools/voices.mjs --cast pip=2,thorin=1      add audition picks to your account and cast them
 import { readFile, writeFile, mkdir, access, unlink } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import * as G from '../js/story.js';
@@ -79,7 +81,7 @@ for (const job of jobs) {
     if (!cast.voices[s.voice]) throw new Error(`No voice cast for "${s.voice}" (line ${job.key}). Add it to tools/voices.json.`);
   }
   job.hash = createHash('sha1')
-    .update(JSON.stringify([cast.model, job.segs.map(s => [cast.voices[s.voice], s.text])]))
+    .update(JSON.stringify([cast.model, job.segs.map(s => [cast.voices[s.voice].id, cast.voices[s.voice].settings, s.text])]))
     .digest('hex')
     .slice(0, 12);
 }
@@ -112,6 +114,73 @@ if (has('--list-voices')) {
   process.exit(0);
 }
 
+const headers = { 'xi-api-key': apiKey };
+const AUDITION = new URL('tools/.audition.json', ROOT);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+async function api(path, init = {}) {
+  const res = await fetch(`${API}${path}`, { ...init, headers: { ...headers, ...init.headers } });
+  if (!res.ok) throw new Error(`ElevenLabs ${res.status} on ${path}: ${await res.text()}`);
+  return res.json();
+}
+
+if (has('--audition')) {
+  const found = {};
+  for (const [role, v] of Object.entries(cast.voices)) {
+    const seen = new Map();
+    for (const term of v.search?.terms || []) {
+      const q = new URLSearchParams({ search: term, page_size: '8', sort: 'cloned_by_count' });
+      if (v.search.gender) q.set('gender', v.search.gender);
+      const { voices } = await api(`/shared-voices?${q}`);
+      for (const sv of voices) if (!seen.has(sv.voice_id)) seen.set(sv.voice_id, sv);
+    }
+    // Most-used first; voices free accounts can't use, or that cost extra, go last.
+    found[role] = [...seen.values()]
+      .sort((a, b) => (b.free_users_allowed - a.free_users_allowed) || ((a.rate || 1) - (b.rate || 1)) || (b.cloned_by_count - a.cloned_by_count))
+      .slice(0, 8);
+    console.log(`${role.padEnd(10)} ${found[role].length} candidates`);
+  }
+  await writeFile(AUDITION, JSON.stringify(found, null, 2));
+
+  const sections = Object.entries(found).map(([role, list]) => `
+    <section><h2>${role} <small>now: ${esc(cast.voices[role].name)}</small></h2>
+    <p class="want">${esc(cast.voices[role].want)}</p>
+    <ol>${list.map(sv => `<li>
+      <div><b>${esc(sv.name)}</b> <span>${esc([sv.gender, sv.age?.replace('_', ' '), sv.accent, sv.descriptive].filter(Boolean).join(' · '))}</span>
+      ${sv.free_users_allowed ? '' : '<em>paid plans only</em>'} ${sv.rate > 1 ? `<em>costs ${sv.rate}× credits</em>` : ''}</div>
+      <p>${esc(sv.description || '')}</p>
+      ${sv.preview_url ? `<audio controls preload="none" src="${esc(sv.preview_url)}"></audio>` : ''}
+    </li>`).join('')}</ol></section>`).join('');
+  await writeFile(new URL('tools/audition.html', ROOT), `<!doctype html><meta charset="utf-8"><title>Voice audition</title>
+<style>body{font:16px/1.4 system-ui;max-width:760px;margin:2em auto;padding:0 1em;background:#16110d;color:#f1e4c8}
+h2{text-transform:capitalize;border-bottom:1px solid #4a3626;padding-bottom:.2em}small{font-weight:400;color:#b39f82;font-size:.6em}
+.want{color:#e0a84a;font-style:italic}li{margin:0 0 1.2em}li p{margin:.2em 0;color:#b39f82;font-size:.9em}
+span{color:#b39f82;font-size:.85em}em{color:#e07a6a;font-size:.8em;margin-left:.4em}audio{width:100%;height:32px}code{background:#2e221a;padding:.2em .4em;border-radius:4px}</style>
+<h1>Drowned Lantern voice audition</h1>
+<p>Pick a number for each role, then run <code>node tools/voices.mjs --cast pip=2,thorin=1,…</code></p>${sections}`);
+  console.log('\nOpen tools/audition.html to listen, then cast with: node tools/voices.mjs --cast role=N,...');
+  process.exit(0);
+}
+
+if (has('--cast')) {
+  const found = JSON.parse(await readFile(AUDITION, 'utf8').catch(() => '{}'));
+  for (const pick of (args[args.indexOf('--cast') + 1] || '').split(',')) {
+    const [role, n] = pick.split('=');
+    const sv = found[role]?.[Number(n) - 1];
+    if (!cast.voices[role] || !sv) throw new Error(`No audition pick "${pick}". Run --audition first and use role=number.`);
+    const { voice_id } = await api(`/voices/add/${sv.public_owner_id}/${sv.voice_id}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ new_name: `Lantern ${role}: ${sv.name}`.slice(0, 60) }),
+    });
+    Object.assign(cast.voices[role], { id: voice_id, name: sv.name });
+    console.log(`${role.padEnd(10)} → ${sv.name} (${voice_id})`);
+  }
+  await writeFile(new URL('tools/voices.json', ROOT), JSON.stringify(cast, null, 2) + '\n');
+  console.log('Updated tools/voices.json.');
+  process.exit(0);
+}
+
 async function tts({ voice, text }) {
   const v = cast.voices[voice];
   const body = { text, model_id: cast.model };
@@ -119,7 +188,7 @@ async function tts({ voice, text }) {
   for (let attempt = 1; ; attempt++) {
     const res = await fetch(`${API}/text-to-speech/${v.id}?output_format=mp3_44100_128`, {
       method: 'POST',
-      headers: { 'xi-api-key': apiKey, 'content-type': 'application/json', accept: 'audio/mpeg' },
+      headers: { ...headers, 'content-type': 'application/json', accept: 'audio/mpeg' },
       body: JSON.stringify(body),
     });
     if (res.ok) return Buffer.from(await res.arrayBuffer());
